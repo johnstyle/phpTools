@@ -103,7 +103,11 @@ class Session
                 Libraries\Env::cookieSet($name);
             }
         }
-        session_destroy();
+
+        if (self::start(false)) {
+            session_destroy();
+        }
+
         $this->redirect($url);
     }
 
