@@ -25,18 +25,48 @@ namespace PHPTools;
  */
 class Session
 {
-    private static $id;
+    public static $id;
 
-    public static function start()
+    /**
+     * @param bool $close
+     * @return bool
+     */
+    public static function start($close = true)
     {
-        if (session_status() == PHP_SESSION_NONE) {
+        if(!headers_sent()) {
 
-            session_start();
+            if (session_status() === PHP_SESSION_NONE) {
 
-            if(!self::$id) {
+                session_start();
 
-                self::$id = session_id();
+                if (session_status() === PHP_SESSION_ACTIVE) {
 
+                    self::$id = session_id();
+
+                    if($close) {
+
+                        session_write_close();
+                    }
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param callable $callback
+     * @param array $args
+     */
+    public static function write(callable $callback, array $args = array())
+    {
+        if(is_callable($callback)){
+
+            if (self::start(false)) {
+
+                call_user_func_array($callback, $args);
                 session_write_close();
             }
         }
